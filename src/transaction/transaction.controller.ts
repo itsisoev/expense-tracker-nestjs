@@ -16,6 +16,7 @@ import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { AuthorGuard } from 'src/author.guard';
 
 @Controller('transactions')
 export class TransactionController {
@@ -32,6 +33,12 @@ export class TransactionController {
       createTransactionDto,
       +req.user.id,
     );
+  }
+
+  @Get(':type/find')
+  @UseGuards(JwtAuthGuard)
+  findAllByType(@Req() req, @Param('type') type: string) {
+    return this.transactionService.findAllByType(+req.user.id, type);
   }
 
   @Get('pagination')
@@ -54,14 +61,14 @@ export class TransactionController {
     return this.transactionService.findTransactions(+req.user.id);
   }
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @Get(':type/:id')
+  @UseGuards(JwtAuthGuard, AuthorGuard)
   findTransaction(@Param('id') id: string) {
     return this.transactionService.findTransaction(+id);
   }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @Patch(':type/:id')
+  @UseGuards(JwtAuthGuard, AuthorGuard)
   updateTransaction(
     @Param('id') id: string,
     @Body() updateTransactionDto: UpdateTransactionDto,
@@ -69,8 +76,8 @@ export class TransactionController {
     return this.transactionService.updateTransaction(+id, updateTransactionDto);
   }
 
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @Delete(':type/:id')
+  @UseGuards(JwtAuthGuard, AuthorGuard)
   removeTransaction(@Param('id') id: string) {
     return this.transactionService.removeTransaction(+id);
   }
