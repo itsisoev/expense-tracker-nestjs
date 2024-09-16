@@ -10,6 +10,8 @@ import {
   Req,
   UsePipes,
   ValidationPipe,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -17,7 +19,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { AuthorGuard } from 'src/author.guard';
 
-@Controller('category')
+@Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
@@ -36,6 +38,7 @@ export class CategoryController {
 
   @Get(':type/:id')
   @UseGuards(JwtAuthGuard, AuthorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findCategory(@Param('id') id: string) {
     return this.categoryService.findCategory(+id);
   }

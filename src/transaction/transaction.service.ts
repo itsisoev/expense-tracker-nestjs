@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +20,13 @@ export class TransactionService {
     createTransactionDto: CreateTransactionDto,
     id: number,
   ) {
+    if (createTransactionDto.type === 'expense') {
+      const currentBalance = await this.calculateBalance(id);
+      if (currentBalance < createTransactionDto.amount) {
+        throw new BadRequestException('Expense exceeds current balance');
+      }
+    }
+
     const newTransaction = this.transactionRepository.create({
       title: createTransactionDto.title,
       amount: createTransactionDto.amount,
@@ -32,6 +43,7 @@ export class TransactionService {
       where: {
         user: { id },
       },
+      relations: ['category'],
       order: {
         createdAt: 'DESC',
       },
@@ -97,5 +109,11 @@ export class TransactionService {
     const total = transaction.reduce((acc, obj) => acc + obj.amount, 0);
 
     return total;
+  }
+
+  async calculateBalance(id: number) {
+    const income = await this.findAllByType(id, 'income');
+    const expense = await this.findAllByType(id, 'expense');
+    return income - expense;
   }
 }

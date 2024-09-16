@@ -19,7 +19,7 @@ export class Category {
   @Column()
   title: string;
 
-  @ManyToOne(() => User, (user) => user.categories)
+  @ManyToOne(() => User, (user) => user.categories, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

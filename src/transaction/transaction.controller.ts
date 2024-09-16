@@ -11,6 +11,8 @@ import {
   UseGuards,
   Req,
   Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -43,6 +45,7 @@ export class TransactionController {
 
   @Get('pagination')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findTransactionsWithPagination(
     @Req() req,
     @Query('page') page: number = 1,
@@ -63,6 +66,7 @@ export class TransactionController {
 
   @Get(':type/:id')
   @UseGuards(JwtAuthGuard, AuthorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findTransaction(@Param('id') id: string) {
     return this.transactionService.findTransaction(+id);
   }
@@ -80,5 +84,11 @@ export class TransactionController {
   @UseGuards(JwtAuthGuard, AuthorGuard)
   removeTransaction(@Param('id') id: string) {
     return this.transactionService.removeTransaction(+id);
+  }
+
+  @Get('balance')
+  @UseGuards(JwtAuthGuard)
+  getBalance(@Req() req) {
+    return this.transactionService.calculateBalance(+req.user.id);
   }
 }
